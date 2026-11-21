@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Aditya Bajpai | Aspiring Software Developer</title>
+  <meta name="description" content="Third-year CSE student at Graphic Era Hill University building algorithm visualisers, C systems and AI-powered full-stack apps.">
+  <meta name="author" content="Aditya Bajpai">
+  <!-- TODO after deploying: replace YOUR-URL with your real Vercel address -->
+  <meta property="og:title" content="Aditya Bajpai | Aspiring Software Developer">
+  <meta property="og:description" content="From branch-and-bound solvers and C data structures to computer-vision and AI-powered full-stack apps.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://YOUR-URL.vercel.app/">
+  <meta name="theme-color" content="#eef1f6" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0a1022" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📈</text></svg>">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@1,500&display=swap" rel="stylesheet">
+
+  <style>
+    /* =========================================================
+       1. DESIGN TOKENS — change colours here, everything follows
+       ========================================================= */
+    :root {
+      color-scheme: light;
+      --bg: #eef1f6;          /* cool mist base */
+      --ink: #13203a;         /* main text (navy) */
+      --muted: #4a5670;       /* secondary text */
+      --teal: #0b7f70;        /* links, O(1)/O(log n) curves */
+      --rose: #c8325a;        /* hover colour, O(n log n) curve */
+      --amber: #b86e0a;       /* O(n) curve */
+      --curve-teal: #14b8a6;
+      --curve-rose: #f43f5e;
+      --curve-amber: #f2a541;
+      --curve-violet: #8b5cf6;
+      --glow-opacity: .55;
+
+      --glass: rgba(255, 255, 255, .55);
+      --glass-strong: rgba(255, 255, 255, .72);
+      --glass-border: rgba(255, 255, 255, .85);
+      --glass-edge: rgba(19, 32, 58, .08);
+      --blur: 16px;
+
+      --r-panel: 22px;   /* big panels */
+      --r-btn: 12px;     /* buttons */
+      --r-chip: 8px;     /* small tags */
+
+      --font: "Schibsted Grotesk", "Segoe UI", system-ui, sans-serif;
+      --math: "STIX Two Text", "Cambria Math", "Times New Roman", serif;
+      --nav-h: 68px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        color-scheme: dark;
+        --bg: #0a1022;
+        --ink: #e8ecf4;
+        --muted: #9aa6bd;
+        --teal: #4fe0c8;
+        --rose: #ff7b98;
+        --amber: #ffc266;
+        --glow-opacity: .5;
+        --glass: rgba(18, 26, 50, .5);
+        --glass-strong: rgba(18, 26, 50, .72);
+        --glass-border: rgba(255, 255, 255, .12);
+        --glass-edge: rgba(255, 255, 255, .06);
+      }
+    }
+
+    /* =========================================================
+       2. BASE
+       ========================================================= */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.6;
+      font-size: 1.0625rem;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; }
+    img, svg { max-width: 100%; }
+    section, .project { scroll-margin-top: calc(var(--nav-h) + 28px); }
+    :focus-visible { outline: 3px solid var(--teal); outline-offset: 3px; border-radius: 6px; }
+    .math { font-family: var(--math); font-style: italic; font-weight: 500; }
+    .wrap { width: min(1120px, 100% - 2.5rem); margin-inline: auto; }
+
+    /* Glass surface: the one reusable building block */
+    .glass {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 1px 0 var(--glass-border) inset, 0 0 0 1px var(--glass-edge);
+      -webkit-backdrop-filter: blur(var(--blur)) saturate(140%);
+      backdrop-filter: blur(var(--blur)) saturate(140%);
+    }
+    /* Fallback for browsers without backdrop-filter: make glass more solid */
+    @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+      .glass { background: var(--glass-strong); }
+    }
+
+    /* =========================================================
+       3. BACKGROUND — Big-O growth curves the glass frosts over
+       ========================================================= */
+    .curves {
+      position: fixed; inset: 0; z-index: -1;
+      width: 100%; height: 100%;
+      pointer-events: none;
+    }
+    .curves .glow { filter: blur(34px); opacity: var(--glow-opacity); }
+    .curves .glow path { fill: none; stroke-width: 70; stroke-linecap: round; }
+    .curves .line path {
+      fill: none; stroke-width: 2.2; stroke-linecap: round; opacity: .75;
+      stroke-dasharray: 1; stroke-dashoffset: 1;
+      animation: draw 1.8s cubic-bezier(.6,.05,.3,1) forwards;
+    }
+    .curves .line path:nth-child(2) { animation-delay: .15s; }
+    .curves .line path:nth-child(3) { animation-delay: .3s; }
+    .curves .line path:nth-child(4) { animation-delay: .45s; }
+    .curves .line path:nth-child(5) { animation-delay: .6s; }
+    .curves .axis { stroke: var(--muted); stroke-width: 1.2; opacity: .35; fill: none; }
+    .curves text { font-family: var(--math); font-style: italic; font-size: 22px; fill: var(--muted); opacity: 0; animation: fade .6s 1.6s forwards; }
+    @keyframes draw { to { stroke-dashoffset: 0; } }
+    @keyframes fade { to { opacity: .8; } }
+
+    /* =========================================================
+       4. NAVIGATION
+       ========================================================= */
+    .nav {
+      position: fixed; top: 12px; left: 50%; transform: translateX(-50%);
+      width: min(1120px, 100% - 1.5rem);
+      height: var(--nav-h);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 .75rem 0 1.25rem;
+      border-radius: 999px;
+      z-index: 10;
+    }
+    .logo { font-weight: 800; font-size: 1.15rem; text-decoration: none; letter-spacing: -.02em; }
+    .logo span { color: var(--teal); }
+    .nav-links { display: flex; gap: .25rem; list-style: none; align-items: center; }
+    .nav-links a {
+      display: block; padding: .5rem .8rem; border-radius: 999px;
+      text-decoration: none; color: var(--muted); font-weight: 500; font-size: .95rem;
+      transition: color .2s, background-color .2s;
+    }
+    .nav-links a:hover { color: var(--rose); }
+    .nav-links a.active { color: var(--ink); background: var(--glass-strong); }
+    .nav-links .btn-nav { color: var(--bg); background: var(--ink); margin-left: .35rem; }
+    .nav-links .btn-nav:hover { color: var(--bg); background: var(--rose); }
+    .menu-btn { display: none; }
+
+    /* =========================================================
+       5. BUTTONS, CHIPS, LINKS
+       ========================================================= */
+    .btn {
+      display: inline-flex; align-items: center; gap: .5rem;
+      padding: .8rem 1.3rem; border-radius: var(--r-btn);
+      font: 600 1rem var(--font); text-decoration: none;
+      transition: color .2s, background-color .2s, border-color .2s;
+    }
+    .btn svg { width: 18px; height: 18px; flex: none; }
+    .btn-solid { background: var(--ink); color: var(--bg); border: 1px solid var(--ink); }
+    .btn-solid:hover { background: var(--rose); border-color: var(--rose); }
+    .btn-ghost { color: var(--ink); }
+    .btn-ghost:hover { color: var(--rose); }
+
+    .chips { display: flex; flex-wrap: wrap; gap: .45rem; list-style: none; }
+    .chips li {
+      padding: .25rem .65rem; border-radius: var(--r-chip);
+      font-size: .875rem; font-weight: 500;
+      background: var(--glass-strong); border: 1px solid var(--glass-edge);
+    }
+
+    /* Pitch-line links: hover changes colour, click scrolls to the project */
+    .jump {
+      color: var(--teal); font-weight: 600; text-decoration: underline;
+      text-decoration-thickness: 2px; text-underline-offset: 4px;
+      text-decoration-color: color-mix(in srgb, var(--teal) 35%, transparent);
+      transition: color .2s, text-decoration-color .2s;
+    }
+    .jump:hover { color: var(--rose); text-decoration-color: var(--rose); }
+
+    /* =========================================================
+       6. SECTIONS
+       ========================================================= */
+    main { padding-top: calc(var(--nav-h) + 12px); }
+    .section { padding: 4.5rem 0; }
+    .section-head { margin-bottom: 2rem; max-width: 62ch; }
+    .section-head h2 { font-size: clamp(1.9rem, 4vw, 2.6rem); line-height: 1.15; letter-spacing: -.025em; font-weight: 800; }
+    .section-head p { color: var(--muted); margin-top: .5rem; }
+    .panel { border-radius: var(--r-panel); padding: clamp(1.4rem, 3vw, 2.2rem); }
+
+    /* --- Hero --- */
+    .hero { min-height: calc(100svh - var(--nav-h) - 12px); display: grid; align-items: center; padding: 3rem 0; }
+    .hero-card { max-width: 760px; }
+    .hero-meta { color: var(--muted); font-weight: 500; }
+    .hero h1 {
+      font-size: clamp(3rem, 9vw, 6.2rem); line-height: .95;
+      letter-spacing: -.045em; font-weight: 800; margin: .6rem 0 1.4rem;
+    }
+    .pitch { font-size: clamp(1.15rem, 2.2vw, 1.4rem); line-height: 1.55; max-width: 36ch; }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 2rem; }
+    .social { display: flex; flex-wrap: wrap; gap: 1.25rem; margin-top: 1.6rem; list-style: none; }
+    .social a {
+      display: inline-flex; align-items: center; gap: .4rem;
+      color: var(--muted); text-decoration: none; font-weight: 500; transition: color .2s;
+    }
+    .social a:hover { color: var(--rose); }
+    .social svg { width: 18px; height: 18px; }
+
+    /* --- About --- */
+    .about-grid { display: grid; gap: 1.25rem; }
+    .about-text p + p { margin-top: 1rem; }
+    .about-text { max-width: 64ch; font-size: 1.125rem; }
+    .facts { display: grid; gap: 1rem; list-style: none; }
+    .facts strong { display: block; font-size: 1.6rem; letter-spacing: -.02em; }
+    .facts span { color: var(--muted); font-size: .95rem; }
+
+    /* --- Journey (a real sequence, so years are the markers) --- */
+    .timeline { list-style: none; position: relative; display: grid; gap: 1rem; }
+    .timeline li { display: grid; grid-template-columns: 4.5rem 1fr; gap: 1rem; align-items: start; }
+    .timeline .year { font-weight: 800; font-size: 1.35rem; letter-spacing: -.02em; color: var(--teal); padding-top: 1.1rem; }
+    .timeline .panel h3 { font-size: 1.15rem; line-height: 1.3; }
+    .timeline .panel p { color: var(--muted); margin-top: .35rem; }
+    .timeline .place { font-size: .9rem; color: var(--muted); margin-top: .5rem; }
+
+    /* --- Skills --- */
+    .skills-grid { display: grid; gap: 1rem; }
+    .skills-grid h3 { font-size: 1.05rem; margin-bottom: .8rem; }
+
+    /* --- Projects --- */
+    .projects { display: grid; gap: 1.25rem; }
+    .project { display: flex; flex-direction: column; gap: .9rem; transition: box-shadow .3s; }
+    .project h3 { font-size: 1.4rem; letter-spacing: -.02em; line-height: 1.2; }
+    .project .when { color: var(--muted); font-size: .9rem; }
+    .project p { color: var(--muted); }
+    .project .links { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: auto; padding-top: .4rem; }
+    .project .links .btn { padding: .55rem 1rem; font-size: .95rem; }
+    .project.featured h3 { font-size: clamp(1.7rem, 3.2vw, 2.2rem); }
+    .project.featured .features { list-style: none; display: grid; gap: .6rem; align-content: start; padding-top: 2.2rem; color: var(--ink); }
+    .project.featured .features li::before { content: ""; display: inline-block; width: .5rem; height: .5rem; border-radius: 50%; background: var(--teal); margin-right: .6rem; vertical-align: middle; }
+    .badge { align-self: flex-start; font-size: .85rem; font-weight: 600; color: var(--teal); }
+
+    /* Card flashes when you arrive from a pitch-line link */
+    .project.flash { animation: flash 1.6s ease-out; }
+    @keyframes flash {
+      0%, 30% { box-shadow: 0 0 0 3px var(--rose), 0 0 40px color-mix(in srgb, var(--rose) 45%, transparent); }
+      100% { box-shadow: 0 0 0 0 transparent; }
+    }
+
+    /* --- Achievements, résumé, contact --- */
+    .achievements { list-style: none; display: grid; gap: 1.1rem; }
+    .achievements strong { display: block; font-size: 1.1rem; }
+    .achievements span { color: var(--muted); }
+    .cta { display: grid; gap: 1.5rem; align-items: center; }
+    .cta h3 { font-size: clamp(1.4rem, 3vw, 1.9rem); letter-spacing: -.02em; line-height: 1.2; }
+    .cta p { color: var(--muted); margin-top: .4rem; max-width: 52ch; }
+    .cta .hero-actions { margin-top: 0; }
+
+    footer { padding: 2.5rem 0 3rem; color: var(--muted); font-size: .95rem; }
+    footer .wrap { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; }
+
+    /* =========================================================
+       7. LARGER SCREENS (mobile-first: these only ADD layout)
+       ========================================================= */
+    @media (min-width: 720px) {
+      .about-grid { grid-template-columns: 1.7fr 1fr; align-items: start; }
+      .skills-grid { grid-template-columns: repeat(2, 1fr); }
+      .projects { grid-template-columns: repeat(2, 1fr); }
+      .project.featured { grid-column: 1 / -1; display: grid; grid-template-columns: 1.2fr 1fr; gap: 1rem 2.5rem; }
+      .project.featured .col { display: flex; flex-direction: column; gap: .9rem; }
+      .timeline li { grid-template-columns: 6rem 1fr; }
+      .cta { grid-template-columns: 1fr auto; }
+    }
+    @media (min-width: 1000px) {
+      .skills-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+
+    /* =========================================================
+       8. PHONE NAVIGATION (collapses into a menu button)
+       ========================================================= */
+    @media (max-width: 899px) {
+      .menu-btn {
+        display: inline-flex; align-items: center; gap: .4rem;
+        background: none; border: 0; color: var(--ink);
+        font: 600 1rem var(--font); padding: .5rem .8rem; border-radius: 999px; cursor: pointer;
+      }
+      .menu-btn svg { width: 22px; height: 22px; }
+      .nav-links {
+        position: absolute; top: calc(100% + 8px); right: 0; left: 0;
+        flex-direction: column; align-items: stretch; gap: .15rem;
+        padding: .6rem; border-radius: var(--r-panel);
+        background: var(--glass-strong); border: 1px solid var(--glass-border);
+        -webkit-backdrop-filter: blur(var(--blur)); backdrop-filter: blur(var(--blur));
+        display: none;
+      }
+      .nav-links.open { display: flex; }
+      .nav-links a { padding: .75rem 1rem; border-radius: 14px; }
+      .nav-links .btn-nav { margin: .25rem 0 0; text-align: center; }
+    }
+
+    /* Respect people who switch animations off */
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .curves .line path { animation: none; stroke-dashoffset: 0; }
+      .curves text { animation: none; opacity: .8; }
+      .project.flash { animation: none; box-shadow: 0 0 0 3px var(--rose); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background: real Big-O growth curves, frosted by the glass panels -->
+  <svg class="curves" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <g class="glow">
+      <path stroke="var(--curve-teal)"  d="M0 500 L40 486 L80 477 L120 470 L160 465 L200 460 L240 456 L280 452 L320 449 L360 446 L400 444 L440 441 L480 439 L520 437 L560 435 L600 434 L640 432 L680 430 L720 429 L760 427 L800 426 L840 425 L880 423 L920 422 L960 421 L1000 420"/>
+      <path stroke="var(--curve-amber)" d="M0 560 L1000 135"/>
+      <path stroke="var(--curve-rose)"  d="M0 560 L40 557 L80 550 L120 539 L160 525 L200 509 L240 492 L280 472 L320 451 L360 429 L400 406 L440 381 L480 356 L520 330 L560 303 L600 275 L640 246 L680 216 L720 186 L760 156 L800 124 L840 93 L880 60 L920 27 L960 -6 L1000 -40"/>
+      <path stroke="var(--curve-violet)" d="M0 560 L40 558 L80 552 L120 542 L160 527 L200 509 L240 486 L280 460 L320 429 L360 394 L400 355 L440 312 L480 265 L520 214 L560 159 L600 99 L640 36 L680 -32 L720 -40"/>
+    </g>
+    <path class="axis" d="M40 20 L40 560 L1000 560"/>
+    <g class="line">
+      <path pathLength="1" stroke="var(--curve-teal)"   d="M40 530 L1000 530"/>
+      <path pathLength="1" stroke="var(--curve-teal)"   d="M0 500 L40 486 L80 477 L120 470 L160 465 L200 460 L240 456 L280 452 L320 449 L360 446 L400 444 L440 441 L480 439 L520 437 L560 435 L600 434 L640 432 L680 430 L720 429 L760 427 L800 426 L840 425 L880 423 L920 422 L960 421 L1000 420"/>
+      <path pathLength="1" stroke="var(--curve-amber)"  d="M0 560 L1000 135"/>
+      <path pathLength="1" stroke="var(--curve-rose)"   d="M0 560 L40 557 L80 550 L120 539 L160 525 L200 509 L240 492 L280 472 L320 451 L360 429 L400 406 L440 381 L480 356 L520 330 L560 303 L600 275 L640 246 L680 216 L720 186 L760 156 L800 124 L840 93 L880 60 L920 27 L960 -6 L1000 -40"/>
+      <path pathLength="1" stroke="var(--curve-violet)" d="M0 560 L40 558 L80 552 L120 542 L160 527 L200 509 L240 486 L280 460 L320 429 L360 394 L400 355 L440 312 L480 265 L520 214 L560 159 L600 99 L640 36 L680 -32 L720 -40"/>
+    </g>
+    <text x="905" y="518">O(1)</text>
+    <text x="875" y="408">O(log n)</text>
+    <text x="760" y="216">O(n)</text>
+    <text x="870" y="150">O(n log n)</text>
+    <text x="515" y="150">O(n²)</text>
+    <text x="955" y="588">n</text>
+  </svg>
+
+  <!-- ===================== NAVIGATION ===================== -->
+  <nav class="nav glass" aria-label="Main">
+    <a href="#top" class="logo">Aditya<span>.</span></a>
+    <button class="menu-btn" aria-expanded="false" aria-controls="nav-links">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      Menu
+    </button>
+    <ul class="nav-links" id="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#journey">Journey</a></li>
+      <li><a href="#skills">Skills</a></li>
+      <li><a href="#projects">Projects</a></li>
+      <li><a href="#achievements">Achievements</a></li>
+      <li><a href="#contact">Contact</a></li>
+      <li><a href="#resume" class="btn-nav">Résumé</a></li>
+    </ul>
+  </nav>
+
+  <main id="top">
+
+    <!-- ===================== HERO ===================== -->
+    <section class="hero" id="hero">
+      <div class="wrap">
+        <div class="hero-card glass panel">
+          <p class="hero-meta">CSE undergraduate ’28, Graphic Era Hill University</p>
+          <h1>Aditya Bajpai</h1>
+          <p class="pitch">
+            Software engineer in the making: from
+            <a class="jump" href="#proj-tsp">branch-and-bound solvers</a> and
+            <a class="jump" href="#proj-inventory">C data structures</a> to
+            <a class="jump" href="#proj-distraction">computer vision</a> and
+            <a class="jump" href="#proj-algovision">AI-powered full-stack apps</a>.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-solid" href="#projects">See my projects</a>
+            <a class="btn btn-ghost glass" href="#resume">Get my résumé</a>
+          </div>
+          <ul class="social">
+            <li><a href="https://github.com/aditya1xgithub" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="8" r="2"/><path d="M6 7v10M18 10c0 4-6 3-12 7"/></svg>GitHub</a></li>
+            <li><a href="https://www.linkedin.com/in/aditya-bajpai-2b3b94315/" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>LinkedIn</a></li>
+            <li><a href="https://leetcode.com/u/Axitya1/" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 8-4 4 4 4M16 8l4 4-4 4M13.5 5l-3 14"/></svg>LeetCode</a></li>
+            <li><a href="mailto:adityabajpaiofficial1@gmail.com">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>Email</a></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== ABOUT ===================== -->
+    <!-- TODO: rewrite these paragraphs in your own voice -->
+    <section class="section" id="about">
+      <div class="wrap">
+        <div class="section-head"><h2>About</h2></div>
+        <div class="about-grid">
+          <div class="about-text glass panel">
+            <p>I’m a third-year Computer Science student at Graphic Era Hill University in Dehradun, originally from Kanpur. I like problems where the right algorithm changes everything, which is why most of what I build is about making performance visible.</p>
+            <p>I’ve built five project-based-learning projects on my own, ranging from a C inventory system built on hash tables to a web app that analyses the Big-O complexity of any code you paste in. I enjoy development most, and I’m open to SDE and full-stack internships.</p>
+          </div>
+          <ul class="facts glass panel">
+            <li><strong>8.0 / 10</strong><span>CGPA, B.Tech CSE</span></li>
+            <li><strong>5</strong><span>projects built solo</span></li>
+            <li><strong>3rd year</strong><span>graduating in 2028</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== JOURNEY ===================== -->
+    <section class="section" id="journey">
+      <div class="wrap">
+        <div class="section-head">
+          <h2>Journey</h2>
+          <p>From school in Kanpur to building full-stack projects in Dehradun.</p>
+        </div>
+        <ol class="timeline">
+          <li>
+            <span class="year">2022</span>
+            <div class="glass panel">
+              <h3>Class 10, ICSE: 86%</h3>
+              <p>Wendy Academy High School.</p>
+              <p class="place">Kanpur, Uttar Pradesh</p> <!-- TODO: confirm the school is in Kanpur -->
+            </div>
+          </li>
+          <li>
+            <span class="year">2024</span>
+            <div class="glass panel">
+              <h3>Class 12, ISC: 80%</h3>
+              <p>Finished school at Wendy Academy and chose computer science.</p>
+              <p class="place">Kanpur, Uttar Pradesh</p>
+            </div>
+          </li>
+          <li>
+            <span class="year">2024</span>
+            <div class="glass panel">
+              <h3>Moved to Dehradun for B.Tech CSE</h3>
+              <p>Joined Graphic Era Hill University. Selected for the Fishithon overnight coding competition in first year.</p>
+              <p class="place">Dehradun, Uttarakhand</p>
+            </div>
+          </li>
+          <li>
+            <span class="year">2025</span>
+            <div class="glass panel">
+              <h3>First solo projects</h3>
+              <p>Built a uniform inventory system in C on hash tables, and a productivity app with Python, React and SQLite.</p>
+            </div>
+          </li>
+          <li>
+            <span class="year">2026</span>
+            <div class="glass panel">
+              <h3>Algorithms, AI and full stack</h3>
+              <p>Solved the Travelling Salesman Problem with branch and bound, shipped AlgoVision, and built an AI distraction-detection system with OpenCV. Now in third year.</p>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ===================== SKILLS ===================== -->
+    <!-- Only list what you can explain in an interview -->
+    <section class="section" id="skills">
+      <div class="wrap">
+        <div class="section-head"><h2>Skills</h2></div>
+        <div class="skills-grid">
+          <div class="glass panel">
+            <h3>Languages</h3>
+            <ul class="chips"><li>C</li><li>C++</li><li>Java</li><li>Python</li><li>JavaScript</li><li>SQL</li></ul>
+          </div>
+          <div class="glass panel">
+            <h3>Web</h3>
+            <ul class="chips"><li>HTML</li><li>CSS</li><li>React</li></ul>
+          </div>
+          <div class="glass panel">
+            <h3>Data &amp; tools</h3>
+            <ul class="chips"><li>SQLite</li><li>OpenCV</li><li>Git</li><li>GitHub</li></ul>
+          </div>
+          <div class="glass panel">
+            <h3>CS fundamentals</h3>
+            <ul class="chips"><li>Data structures</li><li>Algorithm analysis</li><li>Branch and bound</li><li>Operating systems</li></ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== PROJECTS ===================== -->
+    <section class="section" id="projects">
+      <div class="wrap">
+        <div class="section-head">
+          <h2>Projects</h2>
+          <p>All built solo as part of project-based learning.</p>
+        </div>
+        <div class="projects">
+
+          <article class="project featured glass panel" id="proj-algovision">
+            <div class="col">
+              <span class="badge">Featured project, Jan – Jul 2026</span>
+              <h3>AlgoVision</h3>
+              <p>A web app that makes algorithm time and space complexity visible. Run algorithms at different input sizes, watch their growth curves, and paste any code to get its Big-O analysed by AI.</p>
+              <ul class="chips"><li>React</li><li>TypeScript</li><li>Tailwind CSS</li><li>Supabase Edge Functions</li><li>AI</li></ul>
+              <div class="links">
+                <a class="btn btn-solid" href="https://vision-complexity-hub.vercel.app" target="_blank" rel="noopener">Open live app</a>
+                <a class="btn btn-ghost glass" href="https://github.com/aditya1xgithub/vision-complexity-hub" target="_blank" rel="noopener">View code</a>
+              </div>
+            </div>
+            <ul class="features">
+              <li>Browse sorting and searching algorithms with pseudocode</li>
+              <li>Simulate operation counts for any input size</li>
+              <li>Interactive growth-curve charts</li>
+              <li>Compare two algorithms side by side</li>
+              <li>AI Big-O analysis of pasted code</li>
+            </ul>
+          </article>
+
+          <article class="project glass panel" id="proj-tsp">
+            <span class="when">Nov 2025 – Feb 2026</span>
+            <h3>Travelling Salesman Problem</h3>
+            <p>Finds the minimum-cost tour with branch and bound, pruning non-optimal paths to cut computation on an NP-hard problem.</p>
+            <ul class="chips"><li>C/C++</li><li>JavaScript</li><li>HTML/CSS</li></ul>
+            <div class="links">
+              <!-- TODO: add links, e.g.
+              <a class="btn btn-ghost glass" href="GITHUB-URL" target="_blank" rel="noopener">View code</a> -->
+            </div>
+          </article>
+
+          <article class="project glass panel" id="proj-distraction">
+            <span class="when">Jan – Jul 2026</span>
+            <h3>Screen Distraction Detection</h3>
+            <p>Monitors attention during study and work sessions with computer vision, then sends alerts and focus reports.</p>
+            <ul class="chips"><li>Python</li><li>OpenCV</li><li>JavaScript</li></ul>
+            <div class="links">
+              <!-- TODO: add GitHub / demo links -->
+            </div>
+          </article>
+
+          <article class="project glass panel" id="proj-inventory">
+            <span class="when">Aug – Dec 2025</span>
+            <h3>Uniform Inventory System</h3>
+            <p>Tracks college uniform stock, issues and returns. A C backend built on hash tables, with student login and an admin panel.</p>
+            <ul class="chips"><li>C</li><li>Hash tables</li><li>JavaScript</li></ul>
+            <div class="links">
+              <a class="btn btn-ghost glass" href="https://github.com/aditya1xgithub/Uniform-Inventory-System-For-Your-Collage-" target="_blank" rel="noopener">View code</a>
+            </div>
+          </article>
+
+          <article class="project glass panel" id="proj-productivity">
+            <span class="when">Aug – Dec 2025</span>
+            <h3>Productivity Enhancer</h3>
+            <p>Helps people organise tasks, set priorities and manage their time, built with a modular design.</p>
+            <ul class="chips"><li>Python</li><li>React</li><li>SQLite</li></ul>
+            <div class="links">
+              <!-- TODO: add GitHub / demo links -->
+            </div>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== ACHIEVEMENTS ===================== -->
+    <section class="section" id="achievements">
+      <div class="wrap">
+        <div class="section-head"><h2>Achievements</h2></div>
+        <ul class="achievements glass panel">
+          <li><strong>Runner-up, Vedic Mathematics competition</strong></li>
+          <li><strong>Selected for Fishithon</strong><span>Overnight coding competition, first year of B.Tech</span></li>
+          <li><strong>AWS Skill Builder</strong><span>Foundation course</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ===================== RÉSUMÉ ===================== -->
+    <!-- Put your PDF in the same folder, named Aditya_Bajpai_Resume.pdf -->
+    <section class="section" id="resume">
+      <div class="wrap">
+        <div class="cta glass panel">
+          <div>
+            <h3>Résumé</h3>
+            <p>Education, projects and skills on one page.</p>
+          </div>
+          <div class="hero-actions">
+            <a class="btn btn-solid" href="Aditya_Bajpai_Resume.pdf" download>Download PDF</a>
+            <a class="btn btn-ghost glass" href="Aditya_Bajpai_Resume.pdf" target="_blank" rel="noopener">Open in browser</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== CONTACT ===================== -->
+    <section class="section" id="contact">
+      <div class="wrap">
+        <div class="cta glass panel">
+          <div>
+            <h3>Let’s talk</h3>
+            <p>I’m looking for SDE and full-stack internships. Email is the fastest way to reach me.</p>
+          </div>
+          <div class="hero-actions">
+            <a class="btn btn-solid" href="mailto:adityabajpaiofficial1@gmail.com">Email me</a>
+            <a class="btn btn-ghost glass" href="https://www.linkedin.com/in/aditya-bajpai-2b3b94315/" target="_blank" rel="noopener">Message on LinkedIn</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span>© <span id="year">2026</span> Aditya Bajpai</span>
+      <span>Built by hand with HTML, CSS and JavaScript</span>
+    </div>
+  </footer>
+
+  <script>
+    // 1. Phone menu: open/close, and close after picking a link
+    const menuBtn = document.querySelector('.menu-btn');
+    const navLinks = document.getElementById('nav-links');
+    menuBtn.addEventListener('click', () => {
+      const open = navLinks.classList.toggle('open');
+      menuBtn.setAttribute('aria-expanded', open);
+    });
+    navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+      navLinks.classList.remove('open');
+      menuBtn.setAttribute('aria-expanded', 'false');
+    }));
+
+    // 2. Highlight the nav link of the section you're reading
+    const links = [...navLinks.querySelectorAll('a[href^="#"]')];
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + entry.target.id));
+      });
+    }, { rootMargin: '-45% 0px -50% 0px' });
+    document.querySelectorAll('main section[id]').forEach(s => observer.observe(s));
+
+    // 3. Pitch-line links: flash the project card you jump to
+    document.querySelectorAll('.jump').forEach(link => {
+      link.addEventListener('click', () => {
+        const card = document.querySelector(link.getAttribute('href'));
+        card.classList.remove('flash');
+        void card.offsetWidth;          // restart the animation
+        setTimeout(() => card.classList.add('flash'), 450);
+      });
+    });
+
+    // 4. Keep the footer year current
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
